@@ -28,8 +28,9 @@
 #
 # You can also instantiate the Bio::Hello object to reduce the initialization cost.
 #
-#   hello = Bio::Hello.new(string, codon_table)
+#   hello = Bio::Hello.new(string)
 #   puts hello.encode
+#
 #   puts hello.encode("BIO*RUBY*IS*FUN")
 #
 #   ARGF.each do |line|
@@ -44,25 +45,22 @@ module Bio
 
 class Hello
 
-  def initialize(string = nil, num = nil)
+  attr_reader :message
+
+  def initialize(string = nil)
     @message = string || "HELLO*BIORUBY"
     @aa = clean_aaseq(@message)
-    @ct = codon_table(num)
+    @ct = codon_table
   end
 
   def clean_aaseq(string = "")
     string.upcase.gsub(/[^A-Z]+/, ' ').strip.tr(' ', '*')
   end
 
-  def codon_table(num = nil)
-    begin
-      ct = Bio::CodonTable.copy(num)
-    rescue
-      ct = @ct || Bio::CodonTable.copy(1)
-    end
-
-    # ad hoc modifications to support 26 alphabets
-    # (only confirmed with the codon table 1)
+  # ad hoc modifications to support 26 alphabets
+  # (only confirmed with the codon table 1)
+  def codon_table
+    ct = Bio::CodonTable.copy(1)
 
     # O Pyl pyrrolysine
     ct['tag'] = 'O'
@@ -71,14 +69,9 @@ class Hello
     ct['tga'] = 'U'
 
     # B Asx asparagine/aspartic acid [DN]
-    #ct['[ag]a[tc]'] = 'B'
-    #ct['gac'] = 'B'  # leave 'gat' for D
-    #ct['aac'] = 'B'  # leave 'aat' for N
     ct['nac'] = 'B'  # can be 'uac' (Y) or 'cac' (H) but please omit.
     
     # J Xle isoleucine/leucine [IL]
-    #ct['ctg'] = 'J'  # leave 'tta', 'ttg', 'ctn' for L
-    #ct['ata'] = 'J'  # leave 'att', 'atc' for I
     ct['ctn'] = 'J'  # should also include 'tt[ag]' (L), 'at[tca]' (I).
 
     # Z Glx glutamine/glutamic acid [EQ]
@@ -92,12 +85,9 @@ class Hello
     return ct
   end
 
-  def codon_table=(num)
-    @ct = codon_table(num)
-  end
-
   def encode(string = nil)
     if string
+      @message = string
       @aa = clean_aaseq(string)
     end
     na = @aa.split(//).map{|a| @ct.revtrans(a).first}.join
