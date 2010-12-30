@@ -1,5 +1,5 @@
 #
-# = Bio::Hello -- Hello World library for the BioRuby (just for fun :-)
+# = Bio::Hello -- Hello World plugin for the BioRuby (just for fun :-)
 #
 # Copyright::	Copyright (C) 2010 Toshiaki Katayama <mailto:k at bioruby dot org>
 # License::	Distributes under the same terms as Ruby
@@ -18,8 +18,30 @@
 #
 # the translation itself is originally supported by the BioRuby library,
 # however, this plugin provides both encoding and decoding of the message.
-# Besides, ad hoc support for all 26 alphabets enables you to encode
-# any message as a DNA sequence.
+#
+# Reverse translation of a given string into a DNA sequence can be done
+# by the following script
+#
+#   require 'rubygems'
+#   require 'bio'
+#
+#   ct = Bio::CodonTable[1]
+#   aa = Bio::Sequence::AA("A*HAPPY*NEW*YEAR")
+#   na = aa.split(//).map{|a| ct.revtrans(a).first}.join
+#
+# and can be confirmed by the following bioruby shell session.
+#
+#   bioruby> ct = codontable(1)
+#   bioruby> aa = getseq("A*HAPPY*NEW*YEAR")
+#     ==> A*HAPPY*NEW*YEAR
+#   bioruby> na = aa.split(//).map{|a| ct.revtrans(a).first}.join
+#     ==> "gcataacatgcacctccttattaaaatgaatggtaatatgaagcaaga"
+#
+# However, this method won't work for "I*LOVE*YOU" as the message contains 
+# abnormal amino acids like pyrrolysine and selenocysteine.
+#
+# Therefore, this plugin also provides ad hoc support for all 26 alphabets,
+# which enables you to encode any message as a DNA sequence.
 #
 # Bio::Hello.encode() and Bio::Hello.decode() can be used as class methods.
 #
