@@ -67,16 +67,12 @@ module Bio
 
 class Hello
 
-  attr_reader :message
+  attr_reader :message, :na, :aa
 
   def initialize(string = nil)
     @message = string || "HELLO*BIORUBY"
-    @aa = clean_aaseq(@message)
+    @aa = aaseq(@message)
     @ct = codon_table
-  end
-
-  def clean_aaseq(string = "")
-    string.upcase.gsub(/[^A-Z]+/, ' ').strip.tr(' ', '*')
   end
 
   # ad hoc modifications to support 26 alphabets
@@ -102,15 +98,26 @@ class Hello
     # X Xaa unknown [A-Z]
     ct['nnn'] = 'X'
 
-    ct['xxx'] = '.'
-
     return ct
+  end
+
+  def aaseq(string = "")
+    aa = string.upcase.gsub(/[^A-Z]+/, ' ').strip.tr(' ', '*')
+    Bio::Sequence::AA.new(aa)
+  end
+
+  def naseq(string)
+    if Bio::Sequence.guess(string) == Bio::Sequence::NA
+      dna = Bio::Sequence::NA.new(string)
+    else
+      dna = encode(string)
+    end
   end
 
   def encode(string = nil)
     if string
       @message = string
-      @aa = clean_aaseq(string)
+      @aa = aaseq(string)
     end
     na = @aa.split(//).map{|a| @ct.revtrans(a).first}.join
     @na = Bio::Sequence::NA.new(na)
@@ -120,7 +127,8 @@ class Hello
     if string
       @na = Bio::Sequence::NA.new(string)
     end
-    @na.translate(1, @ct)
+    aa = @na.translate(1, @ct)
+    @aa = Bio::Sequence::AA.new(aa)
   end
 
   def self.encode(string)
@@ -129,6 +137,38 @@ class Hello
 
   def self.decode(string)
     self.new.decode(string)
+  end
+
+  def helix(string = nil)
+    if string
+      @na = naseq(string)
+    end
+    dna = @na.clone
+    len = @na.length
+
+    if len < 16
+      dna += 'n' * (16 - len)
+    end
+
+    pairs = [ [5, 0], [4, 2], [3, 3], [2, 4], 
+              [1, 4], [0, 3], [0, 2], [1, 0] ]
+
+    count = 0
+    dna.window_search(16, 16) do |subseq|
+      pairs.each_with_index do |ij, x|
+        count += 1
+        break if count > len
+        base = subseq[x, 1]
+        puts ' ' * ij[0] + base + '-' * ij[1] + base.complement
+      end
+      pairs.reverse.each_with_index do |ij, x|
+        count += 1
+        break if count > len
+        base = subseq[x + 8, 1]
+        puts ' ' * ij[0] + base.complement + '-' * ij[1] + base
+      end
+    end
+    return ""
   end
 
 end # class Hello
