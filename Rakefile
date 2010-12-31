@@ -15,8 +15,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "bio-hello"
   gem.homepage = "http://github.com/ktym/bioruby-hello"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{Hello World plugin for the BioRuby (just for fun :-)}
+  gem.description = %Q{Encode any message string into a DNA sequence}
   gem.email = "k@bioruby.org"
   gem.authors = ["Toshiaki Katayama"]
   # Include your dependencies below. Runtime dependencies are required when using your gem,
